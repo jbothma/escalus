@@ -53,7 +53,7 @@
          auth_response_stanza/1
      ]).
 
--export([stream_start/1,
+-export([stream_start/2,
          stream_end/0,
          starttls/0,
          compress/1]).
@@ -76,12 +76,12 @@
 %% Stream - related functions
 %%--------------------------------------------------------------------
 
-stream_start(Server) ->
+stream_start(Server, XMLNS) ->
     #xmlstreamstart{name = <<"stream:stream">>, attrs=[
             {<<"to">>, Server},
             {<<"version">>, <<"1.0">>},
             {<<"xml:lang">>, <<"en">>},
-            {<<"xmlns">>, <<"jabber:client">>},
+            {<<"xmlns">>, XMLNS},
             {<<"xmlns:stream">>, <<"http://etherx.jabber.org/streams">>}]}.
 
 stream_end() ->
