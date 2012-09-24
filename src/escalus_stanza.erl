@@ -18,6 +18,7 @@
 
 %% old ones
 -export([chat_to/2,
+         chat/3,
          chat_to_short_jid/2,
          groupchat_to/2,
          iq_result/1,
@@ -172,22 +173,35 @@ error_element(Type, Condition) ->
             attrs = [{<<"xmlns">>, ?NS_STANZA_ERRORS}]
         }}.
 
-message_to(Recipient, Type, Msg) ->
-    #xmlelement{name = <<"message">>, attrs = [
-        {<<"type">>, Type},
-        {<<"to">>, escalus_utils:get_jid(Recipient)}
-    ], children = [#xmlelement{name = <<"body">>, children = [
-        exml:escape_cdata(Msg)
-    ]}]}.
+message(From, Recipient, Type, Msg) ->
+    FromAttr = case From of
+                   undefined -> [];
+                   _ -> [{<<"from">>, From}]
+               end,
+    #xmlelement{
+       name = <<"message">>,
+       attrs = FromAttr ++
+           [{<<"type">>, Type},
+            {<<"to">>, escalus_utils:get_jid(Recipient)}
+           ],
+       children = [#xmlelement{
+                      name = <<"body">>,
+                      children = [exml:escape_cdata(Msg)]
+                     }
+                  ]
+      }.
 
 chat_to(Recipient, Msg) ->
-    message_to(Recipient, <<"chat">>, Msg).
+    message(undefined, Recipient, <<"chat">>, Msg).
+
+chat(Sender, Recipient, Msg) ->
+    message(Sender, Recipient, <<"chat">>, Msg).
 
 chat_to_short_jid(Recipient, Msg) ->
     chat_to(escalus_utils:get_short_jid(Recipient), Msg).
 
 groupchat_to(Recipient, Msg) ->
-    message_to(Recipient, <<"groupchat">>, Msg).
+    message(undefined, Recipient, <<"groupchat">>, Msg).
 
 get_registration_fields() ->
     iq(<<"get">>, [
